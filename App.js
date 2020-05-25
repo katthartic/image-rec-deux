@@ -1,20 +1,15 @@
 import React, { Component } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import Camera from './components/Camera'
+import CameraMode from './components/CameraMode'
 
-export default class App extends Component {
-  constructor(props) {
-    super(props)
-    process.nextTick = setImmediate
-  }
+export default App = () => {
+  const [hasPermission, setHasPermission] = useState(null)
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <Camera />
-      </View>
-    )
-  }
+  return (
+    <View style={styles.container}>
+      <CameraMode />
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({

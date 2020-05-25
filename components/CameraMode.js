@@ -1,11 +1,33 @@
 import React, { useState } from 'react'
-import { RNCamera } from 'react-native-camera'
-import { Dimensions, Alert, StyleSheet, ActivityIndicator } from 'react-native'
+import { Camera } from 'expo-camera'
+import {
+  Dimensions,
+  Alert,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native'
 import CaptureButton from './CaptureButton'
 
-const Camera = (props) => {
+const CameraMode = () => {
   const [identifiedAs, setIdentifiedAs] = useState('')
   const [loading, setLoading] = useState(false)
+  const [hasPermission, setHasPermission] = useState(null)
+  const [type, setType] = useState(Camera.Constants.Type.back)
+
+  useEffect(() => {
+    ;(async () => {
+      const { status } = await Camera.requestPermissionsAsync()
+      setHasPermission(status === 'granted')
+    })()
+  }, [])
+
+  if (hasPermission === null) {
+    return <View />
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>
+  }
 
   let camera
 
@@ -41,11 +63,36 @@ const Camera = (props) => {
   }
 
   return (
-    <RNCamera
+    <Camera
       ref={(ref) => {
         camera = ref
       }}
       style={styles.preview}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: 'transparent',
+          flexDirection: 'row',
+        }}>
+        <TouchableOpacity
+          style={{
+            flex: 0.1,
+            alignSelf: 'flex-end',
+            alignItems: 'center',
+          }}
+          onPress={() => {
+            setType(
+              type === Camera.Constants.Type.back
+                ? Camera.Constants.Type.front
+                : Camera.Constants.Type.back
+            )
+          }}>
+          <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>
+            {' '}
+            Flip{' '}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <ActivityIndicator
         size="large"
         style={styles.loadingIndicator}
@@ -53,7 +100,7 @@ const Camera = (props) => {
         animating={loading}
       />
       <CaptureButton buttonDisabled={loading} onClick={takePicture} />
-    </RNCamera>
+    </Camera>
   )
 }
 
@@ -75,4 +122,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Camera
+export default CameraMode
