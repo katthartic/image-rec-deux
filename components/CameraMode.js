@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Camera } from 'expo-camera'
 import {
   Dimensions,
+  View,
+  Text,
   Alert,
   StyleSheet,
   ActivityIndicator,
@@ -13,7 +15,6 @@ const CameraMode = () => {
   const [identifiedAs, setIdentifiedAs] = useState('')
   const [loading, setLoading] = useState(false)
   const [hasPermission, setHasPermission] = useState(null)
-  const [type, setType] = useState(Camera.Constants.Type.back)
 
   useEffect(() => {
     ;(async () => {
@@ -32,24 +33,29 @@ const CameraMode = () => {
   let camera
 
   const displayAnswer = (identifiedImage) => {
+    console.log('IDed image', identifiedImage)
     setIdentifiedAs(identifiedImage)
+    console.log('set idetified?', identifiedAs)
     setLoading(false)
-    Alert.alert(identifedAs, '', { cancelable: false })
+    console.log('set loading?', loading)
+    Alert.alert(identifiedAs, '', { cancelable: false })
     camera.resumePreview()
   }
 
   const identifyImage = (imageData) => {
+    console.log('got imageData', !!imageData)
     const Clarifai = require('clarifai')
     const app = new Clarifai.App({
       apiKey: '78292abdf6f24db69021d396b66f233b',
     })
     app.models
       .predict(Clarifai.GENERAL_MODEL, { base64: imageData })
-      .then((response) =>
+      .then((response) => {
+        console.log('response', response.outputs[0])
         displayAnswer(response.outputs[0].data.concepts[0].name).catch((err) =>
           alert(err)
         )
-      )
+      })
   }
 
   const takePicture = async () => {
@@ -73,26 +79,7 @@ const CameraMode = () => {
           flex: 1,
           backgroundColor: 'transparent',
           flexDirection: 'row',
-        }}>
-        <TouchableOpacity
-          style={{
-            flex: 0.1,
-            alignSelf: 'flex-end',
-            alignItems: 'center',
-          }}
-          onPress={() => {
-            setType(
-              type === Camera.Constants.Type.back
-                ? Camera.Constants.Type.front
-                : Camera.Constants.Type.back
-            )
-          }}>
-          <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>
-            {' '}
-            Flip{' '}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        }}></View>
       <ActivityIndicator
         size="large"
         style={styles.loadingIndicator}

@@ -1,5 +1,5 @@
-import React, { Component } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React, { useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import CameraMode from './components/CameraMode'
 
 export default App = () => {
