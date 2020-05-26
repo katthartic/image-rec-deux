@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import { Camera } from 'expo-camera'
 import {
   Dimensions,
@@ -23,6 +24,13 @@ const CameraMode = () => {
     })()
   }, [])
 
+  useEffect(() => {
+    if (identifiedAs && loading && camera) {
+      displayAnswer()
+      camera.resumePreview()
+    }
+  })
+
   if (hasPermission === null) {
     return <View />
   }
@@ -32,18 +40,24 @@ const CameraMode = () => {
 
   let camera
 
-  const displayAnswer = (identifiedImage) => {
-    console.log('IDed image', identifiedImage)
-    setIdentifiedAs(identifiedImage)
-    console.log('set idetified?', identifiedAs)
+  const displayAnswer = async () => {
+    const URL = 'https://icanhazdadjoke.com/search?term='
+    const jokes = (
+      await axios.get(`${URL}${identifiedAs}`, {
+        headers: { Accept: 'application/json' },
+      })
+    ).data.results
+    let joke = 'Sorry, no dad joke this time!'
+    if (jokes.length > 0) {
+      joke = jokes[Math.floor(Math.random() * Math.floor(jokes.length))].joke
+    }
+    Alert.alert(identifiedAs, joke, { cancelable: false })
+    setIdentifiedAs('')
     setLoading(false)
-    console.log('set loading?', loading)
-    Alert.alert(identifiedAs, '', { cancelable: false })
-    camera.resumePreview()
   }
 
   const identifyImage = (imageData) => {
-    console.log('got imageData', !!imageData)
+    console.log('got imageData?', !!imageData)
     const Clarifai = require('clarifai')
     const app = new Clarifai.App({
       apiKey: '78292abdf6f24db69021d396b66f233b',
@@ -51,11 +65,16 @@ const CameraMode = () => {
     app.models
       .predict(Clarifai.GENERAL_MODEL, { base64: imageData })
       .then((response) => {
-        console.log('response', response.outputs[0])
-        displayAnswer(response.outputs[0].data.concepts[0].name).catch((err) =>
-          alert(err)
+        const concepts = response.outputs[0].data.concepts
+        const randomIdx = Math.floor(
+          Math.random() * Math.floor(concepts.length)
         )
+        const identifiedImage =
+          response.outputs[0].data.concepts[randomIdx].name
+        console.log('response', identifiedImage)
+        return setIdentifiedAs(identifiedImage)
       })
+      .catch((err) => alert(err))
   }
 
   const takePicture = async () => {

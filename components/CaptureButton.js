@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 import { StyleSheet, Button, TouchableHighlight } from 'react-native'
 
-const CaptureButton = (props) => {
+const CaptureButton = ({ buttonDisabled, onClick }) => {
   return (
-    <TouchableHighlight
-      style={styles.captureButton}
-      disabled={props.buttonDisabled}>
+    <TouchableHighlight style={styles.captureButton} disabled={buttonDisabled}>
       <Button
-        onPress={props.onClick}
-        disabled={props.buttonDisabled}
+        onPress={onClick}
+        disabled={buttonDisabled}
         title="Capture"
         accessibilityLabel="Captures the image on the screen"
       />
