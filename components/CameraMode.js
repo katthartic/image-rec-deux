@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import CaptureButton from './CaptureButton'
+import { generateRandIdx, randomConcepts } from './helpers'
 
 const CameraMode = () => {
   const [identifiedAs, setIdentifiedAs] = useState('')
@@ -43,13 +44,13 @@ const CameraMode = () => {
   const displayAnswer = async () => {
     const URL = 'https://icanhazdadjoke.com/search?term='
     const jokes = (
-      await axios.get(`${URL}${identifiedAs}`, {
+      await axios.get(`${URL}${identifiedAs.split(',')}`, {
         headers: { Accept: 'application/json' },
       })
     ).data.results
     let joke = 'Sorry, no dad joke this time!'
     if (jokes.length > 0) {
-      joke = jokes[Math.floor(Math.random() * Math.floor(jokes.length))].joke
+      joke = jokes[generateRandIdx(jokes)].joke
     }
 
     setLoading(false)
@@ -63,7 +64,6 @@ const CameraMode = () => {
           onPress: () => {
             setIdentifiedAs('')
             setCameraPreview(true)
-            console.log('OK Pressed')
           },
         },
       ],
@@ -81,13 +81,8 @@ const CameraMode = () => {
       .predict(Clarifai.GENERAL_MODEL, { base64: imageData })
       .then((response) => {
         const concepts = response.outputs[0].data.concepts
-        const constIdx = 0
-        const randomIdx = Math.floor(
-          Math.random() * Math.floor(concepts.length)
-        )
-        const identifiedImage = concepts[constIdx].name
-        console.log('response', identifiedImage)
-        return setIdentifiedAs(identifiedImage)
+        const identifiedImageConcepts = randomConcepts(concepts).join(', ')
+        return setIdentifiedAs(identifiedImageConcepts)
       })
       .catch((err) => alert(err))
   }
@@ -108,31 +103,9 @@ const CameraMode = () => {
       ref={(ref) => {
         camera = ref
       }}
-      style={styles.preview}>
-      <TouchableOpacity
-        style={{
-          flex: 0.1,
-          alignSelf: 'flex-end',
-          alignItems: 'center',
-        }}
-        onPress={() => {
-          setType(
-            type === Camera.Constants.Type.back
-              ? Camera.Constants.Type.front
-              : Camera.Constants.Type.back
-          )
-        }}>
-        <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>
-          {' '}
-          Flip{' '}
-        </Text>
-      </TouchableOpacity>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'transparent',
-          flexDirection: 'row',
-        }}></View>
+      style={styles.preview}
+      type={type}>
+      <View style={styles.defaultView}></View>
       <ActivityIndicator
         size="large"
         style={styles.loadingIndicator}
@@ -140,7 +113,20 @@ const CameraMode = () => {
         animating={loading}
       />
       {cameraPreview && (
-        <CaptureButton buttonDisabled={loading} onClick={takePicture} />
+        <View style={styles.touchables}>
+          <CaptureButton buttonDisabled={loading} onClick={takePicture} />
+          <TouchableOpacity
+            style={styles.flipTouch}
+            onPress={() => {
+              setType(
+                type === Camera.Constants.Type.back
+                  ? Camera.Constants.Type.front
+                  : Camera.Constants.Type.back
+              )
+            }}>
+            <Text style={styles.flipTouchText}>Flip</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </Camera>
   )
@@ -161,6 +147,24 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  flipTouch: {
+    flex: 1,
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
+  flipTouchText: {
+    fontSize: 18,
+    marginBottom: 10,
+    color: 'white',
+  },
+  defaultView: {
+    flex: 5,
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+  },
+  touchables: {
+    flex: 1,
   },
 })
 
