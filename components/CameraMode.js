@@ -13,7 +13,7 @@ import {
 import CaptureButton from './CaptureButton'
 import { generateRandIdx, randomConcepts } from './helpers'
 
-const CameraMode = () => {
+const CameraMode = ({ clarifaiKey }) => {
   const [identifiedAs, setIdentifiedAs] = useState('')
   const [cameraPreview, setCameraPreview] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -75,7 +75,7 @@ const CameraMode = () => {
     console.log('got imageData?', !!imageData)
     const Clarifai = require('clarifai')
     const app = new Clarifai.App({
-      apiKey: '78292abdf6f24db69021d396b66f233b',
+      apiKey: clarifaiKey,
     })
     app.models
       .predict(Clarifai.GENERAL_MODEL, { base64: imageData })
@@ -133,9 +133,6 @@ const CameraMode = () => {
 }
 
 const styles = StyleSheet.create({
-  screeen: {
-    padding: 50,
-  },
   preview: {
     flex: 1,
     justifyContent: 'flex-end',
