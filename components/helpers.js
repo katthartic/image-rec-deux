@@ -8,7 +8,8 @@ export function randomConcepts(concepts) {
 
   while (conceptsArr.length < numOfConcepts) {
     const randIdx = generateRandIdx(concepts)
-    conceptsArr.push(concepts[randIdx].name)
+    const concept = concepts[randIdx].name
+    if (!conceptsArr.includes(concept)) conceptsArr.push(concepts[randIdx].name)
   }
   return conceptsArr
 }
