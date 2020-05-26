@@ -14,8 +14,10 @@ import CaptureButton from './CaptureButton'
 
 const CameraMode = () => {
   const [identifiedAs, setIdentifiedAs] = useState('')
+  const [cameraPreview, setCameraPreview] = useState(true)
   const [loading, setLoading] = useState(false)
   const [hasPermission, setHasPermission] = useState(null)
+  const [type, setType] = useState(Camera.Constants.Type.back)
 
   useEffect(() => {
     ;(async () => {
@@ -25,10 +27,8 @@ const CameraMode = () => {
   }, [])
 
   useEffect(() => {
-    if (identifiedAs && loading && camera) {
-      displayAnswer()
-      camera.resumePreview()
-    }
+    if (identifiedAs && loading) displayAnswer()
+    if (camera && cameraPreview) camera.resumePreview()
   })
 
   if (hasPermission === null) {
@@ -51,9 +51,24 @@ const CameraMode = () => {
     if (jokes.length > 0) {
       joke = jokes[Math.floor(Math.random() * Math.floor(jokes.length))].joke
     }
-    Alert.alert(identifiedAs, joke, { cancelable: false })
-    setIdentifiedAs('')
+
     setLoading(false)
+
+    Alert.alert(
+      identifiedAs,
+      joke,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            setIdentifiedAs('')
+            setCameraPreview(true)
+            console.log('OK Pressed')
+          },
+        },
+      ],
+      { cancelable: false }
+    )
   }
 
   const identifyImage = (imageData) => {
@@ -79,6 +94,7 @@ const CameraMode = () => {
 
   const takePicture = async () => {
     camera.pausePreview()
+    setCameraPreview(false)
     setLoading(true)
     const options = {
       base64: true,
@@ -93,6 +109,24 @@ const CameraMode = () => {
         camera = ref
       }}
       style={styles.preview}>
+      <TouchableOpacity
+        style={{
+          flex: 0.1,
+          alignSelf: 'flex-end',
+          alignItems: 'center',
+        }}
+        onPress={() => {
+          setType(
+            type === Camera.Constants.Type.back
+              ? Camera.Constants.Type.front
+              : Camera.Constants.Type.back
+          )
+        }}>
+        <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>
+          {' '}
+          Flip{' '}
+        </Text>
+      </TouchableOpacity>
       <View
         style={{
           flex: 1,
@@ -105,7 +139,9 @@ const CameraMode = () => {
         color="#fff"
         animating={loading}
       />
-      <CaptureButton buttonDisabled={loading} onClick={takePicture} />
+      {cameraPreview && (
+        <CaptureButton buttonDisabled={loading} onClick={takePicture} />
+      )}
     </Camera>
   )
 }
