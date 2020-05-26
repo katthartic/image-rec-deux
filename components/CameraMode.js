@@ -81,11 +81,11 @@ const CameraMode = () => {
       .predict(Clarifai.GENERAL_MODEL, { base64: imageData })
       .then((response) => {
         const concepts = response.outputs[0].data.concepts
+        const constIdx = 0
         const randomIdx = Math.floor(
           Math.random() * Math.floor(concepts.length)
         )
-        const identifiedImage =
-          response.outputs[0].data.concepts[randomIdx].name
+        const identifiedImage = concepts[constIdx].name
         console.log('response', identifiedImage)
         return setIdentifiedAs(identifiedImage)
       })
